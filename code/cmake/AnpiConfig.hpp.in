@@ -1,0 +1,1 @@
+#cmakedefine ANPI_ENABLE_SIMD
