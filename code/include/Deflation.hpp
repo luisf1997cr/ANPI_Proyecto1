@@ -105,7 +105,7 @@ bmt::polynomial<T> deflate2(const bmt::polynomial<T> &poly,
   // create a polynomials with 1 as coefficients, of size the same as the
   // polynomial we want to divide to hold the quotient and reminder. Also
   //a denominator
-  typename bmt::polynomial<T> quotient(poly.size(), 1), remainder(poly.size(), 1), denominator;
+  typename bmt::polynomial<T> quotient(poly.size(), T(1)), remainder(poly.size(), T(1)), denominator;
 
   T a = root.real(), b = root.imag();
   denominator = {(a * a + b * b), -(T(2) * a), T(1)};
