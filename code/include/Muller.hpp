@@ -53,16 +53,15 @@ void muller(const bmt::polynomial<T> &poly,
             const U start = U())
 {
   //typedef to simplify instantiations of complex numers
-  typedef typename anpi::detail::inner_type<U>::type type;
-  typedef typename std::complex<type> complex;
+  typedef typename anpi::detail::inner_type<U>::type Utype;
+  typedef typename std::complex<Utype> complex;
 
   //maximun allowed iterations
   const unsigned int MAX_ITERATIONS = 50;
-  const type eps = std::numeric_limits<type>::epsilon();
-  //constant complex that are added
-  const complex comp1 = complex(1), comp2 = complex(2), comp4 = complex(4);
+  const Utype eps = std::numeric_limits<Utype>::epsilon();
 
-  //simple Muller
+  //constant complex numbers that are added in the equations
+  const complex comp1 = complex(1), comp2 = complex(2), comp4 = complex(4);
 
   //choosing 3 equally distant points to start approximation
   //the choice to make the spacing 1 is arbitrary
@@ -76,7 +75,7 @@ void muller(const bmt::polynomial<T> &poly,
   size_t psize = poly.size();
 
   //size of the polynomial is 0
-  if (psize < 2)
+  if (poly.degree() < 1)
     return;
 
   for (unsigned int i = 0; i < MAX_ITERATIONS; i++)
@@ -85,15 +84,17 @@ void muller(const bmt::polynomial<T> &poly,
     //evaluate polynomials at the three given approximations
     f1 = bmt::evaluate_polynomial(&poly.data()[0], x1, psize);
     f2 = bmt::evaluate_polynomial(&poly.data()[0], x2, psize);
-    f3 = bmt::evaluate_polynomial(&poly.data()[0], x3, psize);
 
     //after evaluating the functions we check if we have arrived at a 0
-    if (std::abs(f1) <= eps)
-    { //*****************revisar, creo q esta incorrecto
+    if (std::abs(f1) <= eps || (abs(x2) + eps) < abs(x1))
+    {
       // return x1;
       result = x1;
       return;
     }
+
+    //evaluate after return checking to avoid unnecessary evaluations
+    f3 = bmt::evaluate_polynomial(&poly.data()[0], x3, psize);
 
     //calculating Mullers formulas
     q = (x1 - x2) / (x1 - x2);

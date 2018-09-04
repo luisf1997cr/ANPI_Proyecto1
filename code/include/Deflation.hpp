@@ -34,7 +34,17 @@ bmt::polynomial<T> deflate(const bmt::polynomial<T> &poly,
                            const T &root,
                            T &residuo)
 {
-  typename bmt::polynomial<T> result;
+  typename bmt::polynomial<T> result = poly;
+  unsigned int deg = poly.degree();
+  residuo = poly[deg];
+  result[deg] = T(0);
+  T swap;
+  for (unsigned int i = deg - 1; i >= 0; i--)
+  {
+    swap = result[i];
+    result[i] = residuo;
+    residuo = swap + residuo * root;
+  }
 
   return result;
 }
@@ -57,7 +67,46 @@ bmt::polynomial<T> deflate2(const bmt::polynomial<T> &poly,
 {
   typename bmt::polynomial<T> result;
 
+  result = poly.division();
+
   return result;
+}
+
+/**
+   * Divide a polynomial u by a polynomial v, and return the quotient and remainder polynomials
+   * q and r, respectively. The four polynomials are represented as vectors of coefficients, each
+   * starting with the constant term. There is no restriction on the relative lengths of u and v, and
+   * either may have trailing zeros (represent a lower degree polynomial than its length allows). q
+   * and r are returned with the size of u, but will usually have trailing zeros.
+   *
+   *
+   * @param[in] u polynomial to be divided
+   * @param[in] v polynomial to divide by
+   * @param[out] q quotient of the polynomial division
+   * @param[out] r residual of the polynomial division
+   * 
+   */
+template <class T>
+void poldiv(bmt::polynomial<T> &u, bmt::polynomial<T> &v, bmt::polynomial<T> &q, bmt::polynomial<T> &r)
+
+{
+  int k, j, n = u.size() - 1, nv = v.size() - 1;
+  while (nv >= 0 && v[nv] == T(0))
+    nv--;
+  if (nv < 0)
+    throw("poldiv divide by zero polynomial");
+  r = u;
+  // May do a resize.
+  q.assign(u.size(), T(0);
+  // May do a resize.
+  for (k = n - nv; k >= 0; k--)
+  {
+    q[k] = r[nv + k] / v[nv];
+    for (j = nv + k - 1; j >= k; j--)
+      r[j] -= q[k] * v[j - k];
+  }
+  for (j = nv; j <= n; j++)
+    r[j] = T(0);
 }
 
 } // namespace anpi
