@@ -111,10 +111,9 @@ bmt::polynomial<T> deflate2(const bmt::polynomial<T> &poly,
   denominator = {(a * a + b * b), -(T(2) * a), T(1)};
   anpi::poldiv(poly, denominator, quotient, remainder);
 
-  result = quotient;
   residuo = remainder;
 
-  return result;
+  return quotient;
 }
 
 } // namespace anpi
