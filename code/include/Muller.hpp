@@ -11,6 +11,7 @@
 #ifndef ANPI_MULLER_HPP
 #define ANPI_MULLER_HPP
 
+#include <iostream>
 #include <vector>
 #include <type_traits>
 #include <math.h>
@@ -140,6 +141,8 @@ void muller(const bmt::polynomial<T> &poly,
                     boost::is_complex<U>::value,
                 "U must be floating point or complex");
 
+  const bool isRealCoeff = std::is_floating_point<T>::value;
+  // const bool isComplexRoots = boost::is_complex<U>::value;
   //we have to cast the inner type of midresult to the Inner type of T
   typedef typename anpi::detail::inner_type<T>::type Ttype;
 
@@ -172,14 +175,12 @@ void muller(const bmt::polynomial<T> &poly,
     if (anpi::detail::is_real(midResult))
     {
       //if the coefficients of the polynomial are also real
-      if (std::is_floating_point<T>::value)
+      if (isRealCoeff)
       {
         //we have to cast the result to the same values as the coefficients for deflate to work
         anpi::deflate<T>(dfltPoly, T(midResult.real()), residuoPoly);
       }
-
-      //the coefficients are complex
-      if (boost::is_complex<T>::value) // T is complex
+      else // T is complex
       {
         anpi::deflate<T>(dfltPoly, Ttype(midResult.real()), residuoPoly);
       }
@@ -202,9 +203,11 @@ void muller(const bmt::polynomial<T> &poly,
       //if the coefficients of the polynomial are real
       if (std::is_floating_point<T>::value)
       {
-        //special case of deflation, conjugate complex roots
+        // //special case of deflation, conjugate complex roots
+        // static_assert(std::is_floating_point<T>::value,
+        //               "T must be floating point or complex");//static assert is failing
 
-        anpi::deflate2<T>(dfltPoly, std::complex<Ttype>(Ttype(midResult.real()), Ttype(midResult.imag())), resDef2);
+        dfltPoly = anpi::deflate2<T>(dfltPoly, std::complex<Ttype>(Ttype(midResult.real()), Ttype(midResult.imag())), resDef2);
       }
       if (boost::is_complex<T>::value)
       {

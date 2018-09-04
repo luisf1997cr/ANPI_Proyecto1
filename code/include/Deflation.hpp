@@ -87,12 +87,13 @@ bmt::polynomial<T> deflate(const bmt::polynomial<T> &poly,
 }
 
 /**
-   * Deflate polynomial with a second order polynomial.
+   * Deflate polynomial with a second order polynomial. Coefficients of the
+   * polynomial have to be Real
    *
    * The second order polynomial equals x^2 -2 Re(root)x + |root|^2.
    *
-   * @param[in] poly Input polynomial to be deflated with the provided root
-   * @param[in] root Root of poly to be deflated with.
+   * @param[in] poly polynomial to be deflated with the provided root
+   * @param[in] root complex Root of polynomial to be deflated with.
    * @param[out] residuo Residual of the polynomial deflation
    * @return deflated polynomial
    */
@@ -105,15 +106,18 @@ bmt::polynomial<T> deflate2(const bmt::polynomial<T> &poly,
   // create a polynomials with 1 as coefficients, of size the same as the
   // polynomial we want to divide to hold the quotient and reminder. Also
   //a denominator
-  typename bmt::polynomial<T> quotient(poly.size(), T(1)), remainder(poly.size(), T(1)), denominator;
+  // T psize = static_cast<T>(poly.size());
+  typename bmt::polynomial<T> qnt =poly, rmdr =poly, pol = poly, dnmtr;
 
-  T a = root.real(), b = root.imag();
-  denominator = {(a * a + b * b), -(T(2) * a), T(1)};
-  anpi::poldiv(poly, denominator, quotient, remainder);
+  T a = root.real(),
+    b = root.imag();
+  dnmtr = {(a * a + b * b), -(T(2) * a), T(1)};
 
-  residuo = remainder;
+  anpi::poldiv(pol, dnmtr, qnt, rmdr);
 
-  return quotient;
+  residuo = rmdr;
+
+  return qnt;
 }
 
 } // namespace anpi
