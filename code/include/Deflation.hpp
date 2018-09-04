@@ -76,7 +76,7 @@ bmt::polynomial<T> deflate(const bmt::polynomial<T> &poly,
   residuo = poly[deg];
   result[deg] = T(0);
   T swap;
-  for (unsigned int i = deg - 1; i >= 0; i--)
+  for (int i = deg - 1; i >= 0; i--)
   {
     swap = result[i];
     result[i] = residuo;
@@ -107,7 +107,7 @@ bmt::polynomial<T> deflate2(const bmt::polynomial<T> &poly,
   // polynomial we want to divide to hold the quotient and reminder. Also
   //a denominator
   // T psize = static_cast<T>(poly.size());
-  typename bmt::polynomial<T> qnt =poly, rmdr =poly, pol = poly, dnmtr;
+  typename bmt::polynomial<T> qnt = poly, rmdr = poly, pol = poly, dnmtr;
 
   T a = root.real(),
     b = root.imag();
