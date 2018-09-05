@@ -21,6 +21,27 @@ namespace anpi
 {
 namespace bmt = boost::math::tools; // bt as alias for boost::math::tools
 
+/**Function to know what is the degree of the polynomial
+  *meaning, what is the highest power of x
+  *
+  *
+  *
+  */
+
+template <class T>
+int polyDegree(const bmt::polynomial<T> &poly)
+{
+  int deg = 0;
+  int psize = poly.size();
+  for (int i = 0; i < psize; ++i)
+  {
+    if (poly[i] != T(0))
+      deg = i;
+  }
+
+  return deg;
+}
+
 /**
    * Divide a polynomial u by a polynomial v, and return the quotient and remainder polynomials
    * q and r, respectively. The four polynomials are represented as vectors of coefficients, each
@@ -41,20 +62,20 @@ void poldiv(bmt::polynomial<T> &u, bmt::polynomial<T> &v, bmt::polynomial<T> &q,
 {
   int k, j, n = u.size() - 1, nv = v.size() - 1;
   while (nv >= 0 && v[nv] == T(0))
-    nv--;
+    --nv;
   if (nv < 0)
     throw("poldiv divide by zero polynomial");
   r = u;
   // May do a resize.
   q[u.degree()] = T(0);
   // May do a resize.
-  for (k = n - nv; k >= 0; k--)
+  for (k = n - nv; k >= 0; --k)
   {
     q[k] = r[nv + k] / v[nv];
-    for (j = nv + k - 1; j >= k; j--)
+    for (j = nv + k - 1; j >= k; --j)
       r[j] -= q[k] * v[j - k];
   }
-  for (j = nv; j <= n; j++)
+  for (j = nv; j <= n; ++j)
     r[j] = T(0);
 }
 
@@ -72,11 +93,11 @@ bmt::polynomial<T> deflate(const bmt::polynomial<T> &poly,
                            T &residuo)
 {
   typename bmt::polynomial<T> result = poly;
-  unsigned int deg = poly.degree();
+  unsigned int deg = anpi::polyDegree(poly);
   residuo = poly[deg];
   result[deg] = T(0);
   T swap;
-  for (int i = deg - 1; i >= 0; i--)
+  for (int i = deg - 1; i >= 0; --i)
   {
     swap = result[i];
     result[i] = residuo;

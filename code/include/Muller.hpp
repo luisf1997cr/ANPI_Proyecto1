@@ -38,6 +38,22 @@ enum PolishEnum
 
 namespace bmt = boost::math::tools; // for polynomial
 
+////////////////////////////////////////////////////////////////////////////////////////////
+
+template <class T>
+inline void
+addResult(std::vector<std::complex<T>> &results, std::complex<T> &res)
+{
+  results.push_back(res);
+}
+
+template <class T>
+inline void
+addResult(std::vector<T> &results, std::complex<T> &res)
+{
+  results.push_back(res.real());
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////
 //Muller method for one root
 /**
    * Compute one root of the given polynomial using the Muller method.
@@ -58,9 +74,10 @@ void muller(const bmt::polynomial<T> &poly,
   typedef typename std::complex<Utype> complex;
 
   //maximun allowed iterations
-  const unsigned int MAX_ITERATIONS = 50;
+  const unsigned int MAX_ITERATIONS = 5000;
   const Utype eps = std::numeric_limits<Utype>::epsilon();
-
+  //estimated error
+  // complex ea;
   //constant complex numbers that are added in the equations
   const complex comp1 = complex(1), comp2 = complex(2), comp4 = complex(4);
 
@@ -69,25 +86,32 @@ void muller(const bmt::polynomial<T> &poly,
   complex x1 = complex(start), x2 = x1 + comp1, x3 = x1 + comp2;
 
   //variables to hold calculations
-  complex q, A, B, C, xi;
+  complex q, A, B, C, plusDenom, minusDenom, xi;
   //variables to hold the evaluated polynomials
   complex f1, f2, f3;
 
+  //size and degree of the polynomial
   size_t psize = poly.size();
+  int deg = anpi::polyDegree(poly);
 
-  //size of the polynomial is 0
-  if (poly.degree() < 1)
+  //degree of the polynomial is 0, there are no root
+  //for this is a constant
+  if (deg < 1)
     return;
 
-  for (unsigned int i = 0; i < MAX_ITERATIONS; i++)
+  for (unsigned int i = 0; i < MAX_ITERATIONS; ++i)
   {
 
     //evaluate polynomials at the three given approximations
     f1 = bmt::evaluate_polynomial(&poly.data()[0], x1, psize);
     f2 = bmt::evaluate_polynomial(&poly.data()[0], x2, psize);
 
-    //after evaluating the functions we check if we have arrived at a 0
-    if (std::abs(f1) <= eps || (abs(x2) + eps) < abs(x1))
+    //posible extra stop condition
+    // |  abs(x1) < (abs(x2) + eps)
+
+    // ea = complex(1) - (x2 / x1);
+    //after evaluating the functions we check if we have arrived at a 0a
+    if (std::abs(f1) <= eps)
     {
       // return x1;
       result = x1;
@@ -103,9 +127,13 @@ void muller(const bmt::polynomial<T> &poly,
     B = (comp2 * q + comp1) * f1 - (comp1 + q) * (comp1 + q) * f2 + q * q * f3;
     C = (comp1 + q) * f1;
 
+    plusDenom = B + std::sqrt(B * B - comp4 * A * C);
+
+    minusDenom = B - std::sqrt(B * B - comp4 * A * C);
+
     //calculate new approximation
-    xi = B.real() >= 0 ? x1 - (x1 - x2) * (comp2 * C) / (B + std::sqrt(B * B - comp4 * A * C))
-                       : x1 - (x1 - x2) * (comp2 * C) / (B - std::sqrt(B * B - comp4 * A * C));
+    xi = std::abs(plusDenom) > std::abs(minusDenom) ? x1 - (x1 - x2) * (comp2 * C / plusDenom)
+                                                    : x1 - (x1 - x2) * (comp2 * C / minusDenom);
 
     //set values for next iteration
     x3 = x2;
@@ -144,20 +172,24 @@ void muller(const bmt::polynomial<T> &poly,
 
   const bool isRealCoeff = std::is_floating_point<T>::value;
   const bool isComplexRoots = boost::is_complex<U>::value;
-  //we have to cast the inner type of midresult to the Inner type of T
+
   typedef typename anpi::detail::inner_type<T>::type Ttype;
+  typedef typename anpi::detail::inner_type<U>::type Utype;
 
   //define the polinomial to deflate to get the subsequent roots
   //and the polinomial to use for division
   typename bmt::polynomial<T> dfltPoly = poly, resDef2;
   T residuoPoly;
   //variable to store the result of the Muller method
-  typedef typename anpi::detail::inner_type<U>::type type;
 
-  std::complex<type> midResult;
+  //variable to hold the root every iteration
+  std::complex<Utype> midResult;
+
+  //degree of the polynomial
+  int deg = anpi::polyDegree(poly);
 
   //polynomial order is less than 1 (a constant), no possible results
-  if (poly.degree() == 0)
+  if (deg < 1)
   {
     roots.push_back(std::numeric_limits<U>::quiet_NaN());
     return;
@@ -165,19 +197,20 @@ void muller(const bmt::polynomial<T> &poly,
 
   // the polynomial has to be of order 1 or above in order to be deflated
   //and for Muller to be able to find a root
-  while (dfltPoly.degree() > 0)
+  while (deg > 0)
   {
     //calculate a root
     anpi::muller<T, U>(dfltPoly, midResult, start);
 
     //if polishing is on, polish that root with muller again
     if (polish == PolishRoots)
-      anpi::muller<T, std::complex<type>>(poly, midResult, midResult);
+      anpi::muller<T, std::complex<Utype>>(poly, midResult, midResult);
 
-    // si hay un NaN en los resultados
-    if (midResult.real() == NAN)
+    if (isnan(abs(midResult)))
+    {
+      roots.push_back(std::numeric_limits<U>::quiet_NaN());
       return;
-    // ***************************
+    }
 
     //if Muller's method result was real
     if (anpi::detail::is_real(midResult))
@@ -190,24 +223,24 @@ void muller(const bmt::polynomial<T> &poly,
       }
       else // T is complex
       {
-        dfltPoly = anpi::deflate<T>(dfltPoly, Ttype(midResult.real()), residuoPoly);
+
+        dfltPoly = anpi::deflate<T>(dfltPoly, T(midResult.real()), residuoPoly);
       }
 
       //we are looking for real roots
       if (!isComplexRoots)
       {
         //add to the results
-        roots.push_back(midResult.real());
+        anpi::addResult(roots, midResult);
       }
       //looking for complex and real roots
-      else
+      else //U is complex, roots<U> should be complex
       {
-        roots.push_back(midResult.real());
+        anpi::addResult(roots, midResult);
       }
     }
     else //Muller Result is complex
     {
-
       //if the coefficients of the polynomial are real
       if (isRealCoeff)
       {
@@ -216,6 +249,14 @@ void muller(const bmt::polynomial<T> &poly,
         //               "T must be floating point or complex");//static assert is failing
 
         dfltPoly = anpi::deflate2<T>(dfltPoly, std::complex<Ttype>(Ttype(midResult.real()), Ttype(midResult.imag())), resDef2);
+
+        if (isComplexRoots)
+        {
+          anpi::addResult(roots, midResult);
+        }
+
+        //if we do special deflation, we are removing 2 roots so substract an extra degree
+        --deg;
       }
       else
       {
@@ -226,12 +267,25 @@ void muller(const bmt::polynomial<T> &poly,
       //if we are looking for complex and real roots
       if (isComplexRoots)
       {
-        roots.push_back(midResult.real());
+        // complexResults.push_back(midResult);
+        anpi::addResult(roots, midResult);
       }
     } //end root is complex
-  }   //end while
+
+    //in order not to calculate the degree again we just substract one because we deflated the polynomial
+    --deg;
+  } //end while
+
+  // if (std::is_same<U, std::complex<double>>::value || std::is_same<U, std::complex<float>>::value)
+  // {
+  //   roots = complexResults;
+  // }
+  // else
+  // roots = realResults;
 
 } //end Muller()
+
+/////////////////////////////////////////////////////////////
 
 } // namespace anpi
 
