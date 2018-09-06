@@ -87,7 +87,7 @@ void muller(const bmt::polynomial<T> &poly,
   complex x1 = complex(start), x2 = x1 + comp1, x3 = x1 + comp2;
 
   //variables to hold calculations
-  complex q, A, B, C, plusDenom, minusDenom, plusxi, minusxi, xi, testresta, testab;
+  complex q, A, B, C, plusDenom, minusDenom, plusxi, minusxi, xi;
   //variables to hold the evaluated polynomials
   complex f1, f2, f3;
 
@@ -98,7 +98,11 @@ void muller(const bmt::polynomial<T> &poly,
   //degree of the polynomial is 0, there are no root
   //for this is a constant
   if (deg < 1)
+  {
+    result = std::numeric_limits<T>::quiet_NaN();
     return;
+  }
+
   //first evaluation
   //evaluate polynomials at the given approximations
   f2 = bmt::evaluate_polynomial(&poly.data()[0], x2, psize);
@@ -111,30 +115,28 @@ void muller(const bmt::polynomial<T> &poly,
     f1 = bmt::evaluate_polynomial(&poly.data()[0], x1, psize);
 
     //after evaluating the functions we check if we have arrived at a 0a
-    if (std::abs(f1) <= eps || std::abs(x1 - x2) <= eps)
+    if (std::abs(f1) <= eps)
     {
       //check if imaginary part is too small
-      if (0 < x1.imag() && x1.imag() < eps)
+      if (0 < x1.imag() && x1.imag() < 2 * eps)
       {
         x1.imag(0);
       }
-      if (0 < x1.real() && x1.real() < eps)
+      if (0 < x1.real() && x1.real() < 2 * eps)
       {
         x1.real(0);
       }
-      // //check if real part is too small
-      // if (x1.real() < eps)
-      // {
-      //   x1.real(Utype(0));
-      // }
+      //check if real part is too small
+
       // return x1;
+
       result = x1;
       std::cout << "Found on " << i << " iterations" << std::endl;
       return;
     }
 
     //calculating Mullers formulas
-    q = (x1 - x2) / (x1 - x2);
+    q = (x1 - x2) / (x2 - x3);
     A = q * f1 - q * (comp1 + q) * f2 + q * q * f3;
     B = (comp2 * q + comp1) * f1 - (comp1 + q) * (comp1 + q) * f2 + q * q * f3;
     C = (comp1 + q) * f1;
@@ -142,10 +144,19 @@ void muller(const bmt::polynomial<T> &poly,
     plusDenom = B + std::sqrt((B * B) - (comp4 * A * C));
     plusxi = x1 - ((x1 - x2) * (comp2 * C) / plusDenom);
     minusDenom = B - std::sqrt((B * B) + (comp4 * A * C));
-    minusxi = x1 - ((x1 - x2) * comp2 * C / minusDenom);
+    minusxi = x1 - ((x1 - x2) * (comp2 * C) / minusDenom);
     //calculate new approximation
-    xi = std::abs(plusDenom) >= std::abs(minusDenom) ? plusxi : minusxi;
+    xi = (std::abs(plusDenom) > std::abs(minusDenom) && std::abs(x1 - plusxi) < std::abs(x1 - minusxi))
+             ? plusxi
+             : minusxi;
 
+    //our estimation became a NaN value, no need to continue computing
+    if (std::isnan(std::abs(xi)))
+    {
+      std::cout << "xi se hizo NaN " << std::endl;
+      result = std::numeric_limits<T>::quiet_NaN();
+      return;
+    }
     //set values for next iteration
     x3 = x2;
     x2 = x1;
@@ -196,7 +207,8 @@ void muller(const bmt::polynomial<T> &poly,
   //and the polinomial to use for division
   typename bmt::polynomial<T> dfltPoly = poly, resDef2;
   T residuoPoly;
-  //variable to store the result of the Muller method
+
+  int countRoots = 0;
 
   //variable to hold the root every iteration
   std::complex<Utype> midResult;
@@ -224,6 +236,7 @@ void muller(const bmt::polynomial<T> &poly,
 
     if (isnan(abs(midResult)))
     {
+      ++countRoots;
       roots.push_back(std::numeric_limits<U>::quiet_NaN());
       return;
     }
@@ -246,12 +259,14 @@ void muller(const bmt::polynomial<T> &poly,
       //we are looking for real roots
       if (!isComplexRoots)
       {
+        ++countRoots;
         //add to the results
         anpi::addResult(roots, midResult);
       }
       //looking for complex and real roots
       else //U is complex, roots<U> should be complex
       {
+        ++countRoots;
         anpi::addResult(roots, midResult);
       }
     }
@@ -268,6 +283,7 @@ void muller(const bmt::polynomial<T> &poly,
 
         if (isComplexRoots)
         {
+          ++countRoots;
           std::complex<Utype> conjugate = std::conj(midResult);
           anpi::addResult(roots, conjugate);
         }
@@ -284,6 +300,7 @@ void muller(const bmt::polynomial<T> &poly,
       //if we are looking for complex and real roots
       if (isComplexRoots)
       {
+        ++countRoots;
         // complexResults.push_back(midResult);
         anpi::addResult(roots, midResult);
       }
@@ -293,6 +310,11 @@ void muller(const bmt::polynomial<T> &poly,
     --deg;
   } //end while
 
+  if (countRoots == 0)
+  {
+    roots.push_back(std::numeric_limits<U>::quiet_NaN());
+    return;
+  }
   // if (std::is_same<U, std::complex<double>>::value || std::is_same<U, std::complex<float>>::value)
   // {
   //   roots = complexResults;
