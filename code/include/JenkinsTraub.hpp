@@ -88,6 +88,7 @@ namespace anpi {
 
 using namespace std;
 using namespace boost::math::tools;
+namespace bmt = boost::math::tools; // for polynomial
 
 template<typename T>
 static void noshft(const int l1, const int nn, T h[], T p[], const double eta, T t);
@@ -746,6 +747,30 @@ static void mcon( double *eta, double *infiny, double *smalno, double *base )
     static_assert(std::is_floating_point<U>::value ||
                   boost::is_complex<U>::value,
                   "U must be floating point or complex");
+	const bool isRealCoeff = std::is_floating_point<T>::value;
+    const bool isComplexRoots = boost::is_complex<U>::value;
+    const bool isComplexPoly = boost::is_complex<T>::value;
+
+    //polynomial order is less than 1 (a constant), no possible results
+    if (deg < 1)
+    {
+      roots.push_back(std::numeric_limits<U>::quiet_NaN());
+      return;
+    }
+ 
+    if(isComplexRoots && isComplexPoly){
+      //Declara la cantidad de raices que puede tener la ecuacion.
+      roots.resize(poly.degree());                              //
+      //Inicia el metodo de calculo                             //
+      cpoly<T,U>(poly,poly.degree(),roots);                     //
+      ////////////////////////////////////////////////////////////
+    }else{
+      polynomial<complex<T> > polyCom = (polynomial<complex<T> >)poly;
+      std::vector<complex<U> > vectorCom;
+      vectorCom.resize(poly.degree());
+      cpoly<complex<T>,complex<U> >(polyCom,poly.degree(),vectorCom);
+    }
+
 
     throw Exception("Not implemented yet!");
   }
