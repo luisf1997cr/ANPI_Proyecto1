@@ -60,22 +60,26 @@ template <class T>
 void poldiv(bmt::polynomial<T> &u, bmt::polynomial<T> &v, bmt::polynomial<T> &q, bmt::polynomial<T> &r)
 
 {
-  int k, j, n = u.size() - 1, nv = v.size() - 1;
-  while (nv >= 0 && v[nv] == T(0))
-    --nv;
-  if (nv < 0)
+  int degU = anpi::polyDegree<T>(u), degV = anpi::polyDegree<T>(v);
+
+  int k, j;
+  while (degV >= 0 && v[degV] == T(0))
+    --degV;
+  if (degV < 0)
     throw("poldiv divide by zero polynomial");
+  //initialize to set size same as the polynomial we are dividing
+  q = u;
   r = u;
-  // May do a resize.
-  q[u.degree()] = T(0);
-  // May do a resize.
-  for (k = n - nv; k >= 0; --k)
+
+  q[degU] = T(0);
+
+  for (k = degU - degV; k >= 0; --k)
   {
-    q[k] = r[nv + k] / v[nv];
-    for (j = nv + k - 1; j >= k; --j)
+    q[k] = r[degV + k] / v[degV];
+    for (j = degV + k - 1; j >= k; --j)
       r[j] -= q[k] * v[j - k];
   }
-  for (j = nv; j <= n; ++j)
+  for (j = degV; j <= degU; ++j)
     r[j] = T(0);
 }
 

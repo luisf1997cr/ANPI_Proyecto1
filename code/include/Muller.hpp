@@ -15,6 +15,7 @@
 #include <vector>
 #include <type_traits>
 #include <math.h>
+#include <complex.h>
 
 #include "PolynomialFormulaFormat.hpp"
 #include <Deflation.hpp>
@@ -74,19 +75,19 @@ void muller(const bmt::polynomial<T> &poly,
   typedef typename std::complex<Utype> complex;
 
   //maximun allowed iterations
-  const unsigned int MAX_ITERATIONS = 5000;
+  const unsigned int MAX_ITERATIONS = 100000;
   const Utype eps = std::numeric_limits<Utype>::epsilon();
   //estimated error
   // complex ea;
   //constant complex numbers that are added in the equations
-  const complex comp1 = complex(1), comp2 = complex(2), comp4 = complex(4);
+  const complex comp1 = complex(1), comp2 = complex(2), comp4 = complex(4), compZero(0);
 
   //choosing 3 equally distant points to start approximation
   //the choice to make the spacing 1 is arbitrary
   complex x1 = complex(start), x2 = x1 + comp1, x3 = x1 + comp2;
 
   //variables to hold calculations
-  complex q, A, B, C, plusDenom, minusDenom, xi;
+  complex q, A, B, C, plusDenom, minusDenom, plusxi, minusxi, xi, testresta, testab;
   //variables to hold the evaluated polynomials
   complex f1, f2, f3;
 
@@ -98,28 +99,39 @@ void muller(const bmt::polynomial<T> &poly,
   //for this is a constant
   if (deg < 1)
     return;
+  //first evaluation
+  //evaluate polynomials at the given approximations
+  f2 = bmt::evaluate_polynomial(&poly.data()[0], x2, psize);
+  f3 = bmt::evaluate_polynomial(&poly.data()[0], x3, psize);
 
   for (unsigned int i = 0; i < MAX_ITERATIONS; ++i)
   {
 
     //evaluate polynomials at the three given approximations
     f1 = bmt::evaluate_polynomial(&poly.data()[0], x1, psize);
-    f2 = bmt::evaluate_polynomial(&poly.data()[0], x2, psize);
 
-    //posible extra stop condition
-    // |  abs(x1) < (abs(x2) + eps)
-
-    // ea = complex(1) - (x2 / x1);
     //after evaluating the functions we check if we have arrived at a 0a
-    if (std::abs(f1) <= eps)
+    if (std::abs(f1) <= eps || std::abs(x1 - x2) <= eps)
     {
+      //check if imaginary part is too small
+      if (0 < x1.imag() && x1.imag() < eps)
+      {
+        x1.imag(0);
+      }
+      if (0 < x1.real() && x1.real() < eps)
+      {
+        x1.real(0);
+      }
+      // //check if real part is too small
+      // if (x1.real() < eps)
+      // {
+      //   x1.real(Utype(0));
+      // }
       // return x1;
       result = x1;
+      std::cout << "Found on " << i << " iterations" << std::endl;
       return;
     }
-
-    //evaluate after return checking to avoid unnecessary evaluations
-    f3 = bmt::evaluate_polynomial(&poly.data()[0], x3, psize);
 
     //calculating Mullers formulas
     q = (x1 - x2) / (x1 - x2);
@@ -127,21 +139,25 @@ void muller(const bmt::polynomial<T> &poly,
     B = (comp2 * q + comp1) * f1 - (comp1 + q) * (comp1 + q) * f2 + q * q * f3;
     C = (comp1 + q) * f1;
 
-    plusDenom = B + std::sqrt(B * B - comp4 * A * C);
-
-    minusDenom = B - std::sqrt(B * B - comp4 * A * C);
-
+    plusDenom = B + std::sqrt((B * B) - (comp4 * A * C));
+    plusxi = x1 - ((x1 - x2) * (comp2 * C) / plusDenom);
+    minusDenom = B - std::sqrt((B * B) + (comp4 * A * C));
+    minusxi = x1 - ((x1 - x2) * comp2 * C / minusDenom);
     //calculate new approximation
-    xi = std::abs(plusDenom) > std::abs(minusDenom) ? x1 - (x1 - x2) * (comp2 * C / plusDenom)
-                                                    : x1 - (x1 - x2) * (comp2 * C / minusDenom);
+    xi = std::abs(plusDenom) >= std::abs(minusDenom) ? plusxi : minusxi;
 
     //set values for next iteration
     x3 = x2;
     x2 = x1;
     x1 = xi;
 
+    f3 = f2;
+    f2 = f1;
+
   } //end for
   //return
+
+  std::cout << "no se encontro en Max Iterations = " << MAX_ITERATIONS << std::endl;
   //no Root found on MAX_ITERATIONS
   result = std::numeric_limits<T>::quiet_NaN();
 
@@ -252,7 +268,8 @@ void muller(const bmt::polynomial<T> &poly,
 
         if (isComplexRoots)
         {
-          anpi::addResult(roots, midResult);
+          std::complex<Utype> conjugate = std::conj(midResult);
+          anpi::addResult(roots, conjugate);
         }
 
         //if we do special deflation, we are removing 2 roots so substract an extra degree
