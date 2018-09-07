@@ -14,6 +14,7 @@
 
 namespace bmt = boost::math::tools;
 
+/**
 int main()
 {
     //Variables
@@ -35,8 +36,8 @@ int main()
 
     anpi::muller<std::complex<float>, std::complex<float>>(poly1cf, resMCF, cf1);
     anpi::muller<std::complex<double>, std::complex<double>>(poly1cd, resMCD, cd1);
-    anpi::muller<double, double>(poly1d, resMD, d1);
-    anpi::muller<float, float>(poly1f, resMF, f1);
+    //anpi::muller<double, double>(poly1d, resMD, d1);
+    //anpi::muller<float, float>(poly1f, resMF, f1);
 
     //____x^3-x^2+4x-4___roots = 1, +-2i_________________________________________________________________________
     bmt::polynomial<std::complex<float>> poly2cf = {-cf4, cf4, -cf1, cf1};
@@ -71,4 +72,4 @@ int main()
     // anpi::muller<float, float>(poly3f, resMF, f1);
 
     return 0;
-}
+}*/

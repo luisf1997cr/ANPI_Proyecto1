@@ -750,7 +750,7 @@ void castComplexToReal(std::vector<T> Nroots, std::vector<U> &Oroots)
   int psize = Nroots.size();
   Oroots.resize(psize);
   int i = 0;
-  for (int p = psize - 1; psize >= 0; --p)
+  for (int p = psize - 1; p >= 0; --p)
   {
     if (Nroots[p].imag() == 0)
     {
