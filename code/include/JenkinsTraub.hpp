@@ -752,22 +752,24 @@ void castComplexToReal(std::vector<T> Nroots, std::vector<U> &Oroots)
   int i = 0;
   for (int p = psize - 1; psize >= 0; --p)
   {
-    if(Nroots[p].imag() == 0){
+    if (Nroots[p].imag() == 0)
+    {
       Oroots[p] = Nroots[p].real();
       ++i;
     }
   }
 
-  if(i == 0){
-	  Oroots.resize(1);
-	  Oroots[0] = std::numeric_limits<U>::quiet_NaN();
+  if (i == 0)
+  {
+    Oroots.resize(1);
+    Oroots[0] = std::numeric_limits<U>::quiet_NaN();
   }
 }
 
 //change the root in case the template is real
 //return: real root
 template <typename T, typename U>
-void castComplexToReal(std::vector<T> Nroots, std::vector<complex<U> > &Oroots)
+void castComplexToReal(std::vector<T> Nroots, std::vector<complex<U>> &Oroots)
 {
   Oroots = Nroots;
 }
@@ -801,9 +803,9 @@ void jenkinsTraub(const bmt::polynomial<T> &poly,
   typedef typename anpi::detail::inner_type<U>::type Utype;
   typedef typename std::complex<Utype> complex;
 
-  bmt::polynomial<U> polyRes = anpi::castCoeffToResult<T, U>(poly);
+  bmt::polynomial<complex> polyRes = anpi::castCoeffToResult<T, U>(poly);
 
-  std::vector<Utype> vectorCom;
+  std::vector<complex> vectorCom;
 
   int deg = anpi::polyDegree(poly);
 
@@ -816,34 +818,32 @@ void jenkinsTraub(const bmt::polynomial<T> &poly,
 
   vectorCom.resize(poly.degree());
   cpoly<complex>(polyRes, poly.degree(), vectorCom);
-  castComplexToReal<complex, U>(roots,&vectorCom);
+  castComplexToReal<complex, Utype>(vectorCom, roots);
 
-    return;
+  return;
 }
-
 
 // throw Exception("Not implemented yet!");
 
 ///Helper function to change coefficients of the polynomial to the result
 //for the methods to work
 template <class T, class U>
-typename bmt::polynomial<std::complex<anpi::detail::inner_type<U>>> castCoeffToResult(bmt::polynomial<T> poly)
+typename bmt::polynomial<U> castCoeffToResult(bmt::polynomial<T> poly)
 {
   //typedef to simplify instantiations of complex numers
   // typedef typename anpi::detail::inner_type<U>::type Utype;
-  typedef typename std::complex<anpi::detail::inner_type<U>::type> complex;
+  typedef typename std::complex<U> complex;
   //create result polynomial of the same size filled with ones
   int psize = poly.size();
   bmt::polynomial<complex> result(psize, 1);
 
-  for (psize - 1; psize >= 0; --p)
+  for (psize - 1; psize >= 0; --psize)
   {
     result[psize] = complex(poly[psize]);
   }
 
   return result;
 }
-
 
 } // namespace anpi
 #endif
