@@ -124,7 +124,7 @@ template <typename T>
 static double cmod(const T complejo);
 
 template <class T, class U>
-typename bmt::polynomial<std::complex<anpi::detail::inner_type<U>>> castCoeffToResult(bmt::polynomial<T> poly);
+typename bmt::polynomial<U> castCoeffToResult(bmt::polynomial<T> poly);
 
 static void mcon(double *eta, double *infiny, double *smalno, double *base);
 
@@ -803,7 +803,7 @@ void jenkinsTraub(const bmt::polynomial<T> &poly,
   typedef typename anpi::detail::inner_type<U>::type Utype;
   typedef typename std::complex<Utype> complex;
 
-  bmt::polynomial<complex> polyRes = anpi::castCoeffToResult<T, U>(poly);
+  bmt::polynomial<complex> polyRes = anpi::castCoeffToResult<T, Utype>(poly);
 
   std::vector<complex> vectorCom;
 
