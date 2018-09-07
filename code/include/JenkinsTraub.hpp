@@ -191,7 +191,13 @@ search:
   if (nn <= 1)
   {
     cdivid<T>(-pComplex[1], pComplex[0], &zero[degree - 1]);
-    goto finish;
+    delete[] pComplex;
+    delete[] hComplex;
+    delete[] qpComplex;
+    delete[] qhComplex;
+    delete[] shComplex;
+
+    return degree;
   }
 
   // Calculate bnd, alower bound on the modulus of the zeros
@@ -243,8 +249,6 @@ search:
   // The zerofinder has failed on two major passes
   // return empty handed with the number of roots found (less than the original degree)
   degree -= nn;
-
-finish:
   // Deallocate arrays
   delete[] pComplex;
   delete[] hComplex;
@@ -738,6 +742,36 @@ static void mcon(double *eta, double *infiny, double *smalno, double *base)
   *smalno = numeric_limits<double>::min();
 }
 
+//change the root in case the template is real
+//return: real root
+template <typename T, typename U>
+void castComplexToReal(std::vector<T> Nroots, std::vector<U> &Oroots)
+{
+  int psize = Nroots.size();
+  Oroots.resize(psize);
+  int i = 0;
+  for (int p = psize - 1; psize >= 0; --p)
+  {
+    if(Nroots[p].imag() == 0){
+      Oroots[p] = Nroots[p].real();
+      ++i;
+    }
+  }
+
+  if(i == 0){
+	  Oroots.resize(1);
+	  Oroots[0] = std::numeric_limits<U>::quiet_NaN();
+  }
+}
+
+//change the root in case the template is real
+//return: real root
+template <typename T, typename U>
+void castComplexToReal(std::vector<T> Nroots, std::vector<complex<U> > &Oroots)
+{
+  Oroots = Nroots;
+}
+
 /**
    * Compute the roots of the given polynomial using the Jenkins-Traub method.
    * @param[in] poly polynomial to be analyzed for roots
@@ -782,12 +816,13 @@ void jenkinsTraub(const bmt::polynomial<T> &poly,
 
   vectorCom.resize(poly.degree());
   cpoly<complex>(polyRes, poly.degree(), vectorCom);
+  castComplexToReal<complex, U>(roots,&vectorCom);
 
     return;
 }
 
+
 // throw Exception("Not implemented yet!");
-} // namespace anpi
 
 ///Helper function to change coefficients of the polynomial to the result
 //for the methods to work
@@ -808,6 +843,7 @@ typename bmt::polynomial<std::complex<anpi::detail::inner_type<U>>> castCoeffToR
 
   return result;
 }
+
 
 } // namespace anpi
 #endif
