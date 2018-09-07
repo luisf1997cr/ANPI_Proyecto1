@@ -124,7 +124,7 @@ template <typename T>
 static double cmod(const T complejo);
 
 template <class T, class U>
-typename bmt::polynomial<U> castCoeffToResult(bmt::polynomial<T> poly);
+typename bmt::polynomial<std::complex<typename anpi::detail::inner_type<U>::type>> castCoeffToResult(bmt::polynomial<T> poly);
 
 static void mcon(double *eta, double *infiny, double *smalno, double *base);
 
@@ -795,9 +795,9 @@ void jenkinsTraub(const bmt::polynomial<T> &poly,
   static_assert(std::is_floating_point<U>::value ||
                     boost::is_complex<U>::value,
                 "U must be floating point or complex");
-  const bool isRealCoeff = std::is_floating_point<T>::value;
-  const bool isComplexRoots = boost::is_complex<U>::value;
-  const bool isComplexPoly = boost::is_complex<T>::value;
+  // const bool isRealCoeff = std::is_floating_point<T>::value;
+  // const bool isComplexRoots = boost::is_complex<U>::value;
+  // const bool isComplexPoly = boost::is_complex<T>::value;
 
   //typedef to simplify instantiations of complex numers
   typedef typename anpi::detail::inner_type<U>::type Utype;
@@ -828,18 +828,18 @@ void jenkinsTraub(const bmt::polynomial<T> &poly,
 ///Helper function to change coefficients of the polynomial to the result
 //for the methods to work
 template <class T, class U>
-typename bmt::polynomial<U> castCoeffToResult(bmt::polynomial<T> poly)
+typename bmt::polynomial<std::complex<typename anpi::detail::inner_type<U>::type>> castCoeffToResult(bmt::polynomial<T> poly)
 {
   //typedef to simplify instantiations of complex numers
-  // typedef typename anpi::detail::inner_type<U>::type Utype;
-  typedef typename std::complex<U> complex;
+  typedef typename anpi::detail::inner_type<U>::type Utype;
+  typedef typename std::complex<Utype> complex;
   //create result polynomial of the same size filled with ones
   int psize = poly.size();
   bmt::polynomial<complex> result(psize, 1);
-
-  for (psize - 1; psize >= 0; --psize)
+  --psize;
+  for (int i = psize; i >= 0; --i)
   {
-    result[psize] = complex(poly[psize]);
+    result[i] = complex(poly[i]);
   }
 
   return result;
