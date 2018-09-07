@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
     desc.add_options()("poly,e", po::value<std::string>()->default_value(""),
                        "polynomial expression")("coefficients,c", po::value<std::string>()->default_value("double"),
                                                 "force the given type for the coefficients")("roots,r", po::value<std::string>()->default_value("double"),
-                                                                                             "expect the given type for the roots")("muller,m", "use the Muller method to find the roots (default)")("jenkinstraub,j", "use the Jenkins-Traub method to find the roots")("polish,p", "polish the roots")("help,h", "produce help message");
+                                                                                             "expect the given type for the roots")("muller,m", "use the Muller method to find the roots (default)")("jenkinstraub,j", "use the Jenkins-Traub method to find the roots")("polish,p", "polish the roots")("help,h", "produce help message")("start,s", "set starting point for Muller calculation");
 
     po::variables_map vm;
 
