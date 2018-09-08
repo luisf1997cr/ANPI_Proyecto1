@@ -2,7 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <complex>
-
+#include <boost/test/unit_test.hpp>
 // #include "PolynomialFormulaFormat.hpp"
 #include <boost/type_traits/is_complex.hpp>
 #include <boost/math/tools/polynomial.hpp>
@@ -13,6 +13,40 @@
 #include <JenkinsTraub.hpp>
 
 namespace bmt = boost::math::tools;
+
+BOOST_AUTO_TEST_SUITE(MullerTest)
+
+BOOST_AUTO_TEST_CASE(MullerTestSimple)
+{
+    //   bmt::polynomial<float> p1 = {{1.f,0.f,-2.f,0.f,0.f,3.f}};
+    //  // std::string str = "3x^5 - 2x^2 + 1";
+    //   //BOOST_CHECK(anpi::polynomialFormulaFormat(p1)==str);
+
+    //   typedef std::complex<double> dcomplex;
+
+    //   bmt::polynomial< dcomplex > p2 =
+    //     {{1.,0.,dcomplex(-2,1),0.,0.,dcomplex(0,3.f)}};
+    //  // str = "(0,3)x^5 + (-2,1)x^2 + 1";
+    //  // BOOST_CHECK(anpi::polynomialFormulaFormat(p2)==str);
+}
+
+BOOST_AUTO_TEST_CASE(MullerTestPolished)
+{
+
+    //   bmt::polynomial<float> p1 = {{1.f,0.f,-2.f,0.f,0.f,3.f}};
+    //   std::string str = "3x^5 - 2x^2 + 1";
+    //   BOOST_CHECK(anpi::polynomialFormulaFormat(p1)==str);
+
+    //   typedef std::complex<double> dcomplex;
+
+    //   bmt::polynomial< dcomplex > p2 =
+    //     {{1.,0.,dcomplex(-2,1),0.,0.,dcomplex(0,3.f)}};
+    //   str = "(0,3)x^5 + (-2,1)x^2 + 1";
+    //   BOOST_CHECK(anpi::polynomialFormulaFormat(p2)==str);
+    // }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 /**
 int main()
