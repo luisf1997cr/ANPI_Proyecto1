@@ -18,32 +18,37 @@ BOOST_AUTO_TEST_SUITE(MullerTest)
 
 BOOST_AUTO_TEST_CASE(MullerTestSimple)
 {
-    //   bmt::polynomial<float> p1 = {{1.f,0.f,-2.f,0.f,0.f,3.f}};
-    //  // std::string str = "3x^5 - 2x^2 + 1";
-    //   //BOOST_CHECK(anpi::polynomialFormulaFormat(p1)==str);
+    bmt::polynomial<float> p1 = {{6.f, -5.f, -2.f, 1.f}};
+    float start = 0;
+    std::vector<float> floatresults;
+    std::vector<float> expectedResults = {1, -2, 3};
 
-    //   typedef std::complex<double> dcomplex;
+    anpi::muller(p1, floatresults, anpi::PolishEnum::DoNotPolish, start);
 
-    //   bmt::polynomial< dcomplex > p2 =
-    //     {{1.,0.,dcomplex(-2,1),0.,0.,dcomplex(0,3.f)}};
-    //  // str = "(0,3)x^5 + (-2,1)x^2 + 1";
-    //  // BOOST_CHECK(anpi::polynomialFormulaFormat(p2)==str);
+    BOOST_CHECK(floatresults == expectedResults);
 }
 
 BOOST_AUTO_TEST_CASE(MullerTestPolished)
 {
 
-    //   bmt::polynomial<float> p1 = {{1.f,0.f,-2.f,0.f,0.f,3.f}};
-    //   std::string str = "3x^5 - 2x^2 + 1";
-    //   BOOST_CHECK(anpi::polynomialFormulaFormat(p1)==str);
+    bmt::polynomial<float> p1 = {{6.f, -5.f, -2.f, 1.f}};
+    float start = 0;
+    std::vector<float> floatresults;
+    std::vector<float> expectedResults = {1, -2, 3};
 
-    //   typedef std::complex<double> dcomplex;
+    anpi::muller(p1, floatresults, anpi::PolishEnum::PolishRoots, start);
 
-    //   bmt::polynomial< dcomplex > p2 =
-    //     {{1.,0.,dcomplex(-2,1),0.,0.,dcomplex(0,3.f)}};
-    //   str = "(0,3)x^5 + (-2,1)x^2 + 1";
-    //   BOOST_CHECK(anpi::polynomialFormulaFormat(p2)==str);
-    // }
+    BOOST_CHECK(floatresults == expectedResults);
+}
+
+BOOST_AUTO_TEST_CASE(JenkTrTest)
+{
+
+    bmt::polynomial<float> p1 = {{6.f, -5.f, -2.f, 1.f}};
+    std::vector<float> floatresults;
+    std::vector<float> expectedResults = {1, -2, 3};
+    anpi::jenkinsTraub(p1, floatresults);
+    BOOST_CHECK(floatresults == expectedResults);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
