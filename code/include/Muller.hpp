@@ -115,7 +115,7 @@ void muller(const bmt::polynomial<T> &poly,
     f1 = bmt::evaluate_polynomial(&poly.data()[0], x1, psize);
 
     //after evaluating the functions we check if we have arrived at a 0a
-    if (std::abs(f1) <= eps)
+    if (std::abs(f1) <= eps || std::abs(x1 - x2) < eps)
     {
       //check if imaginary part is too small
       if (0 < x1.imag() && x1.imag() < 2 * eps)
@@ -153,7 +153,7 @@ void muller(const bmt::polynomial<T> &poly,
     //our estimation became a NaN value, no need to continue computing
     if (std::isnan(std::abs(xi)))
     {
-      std::cout << "xi se hizo NaN " << std::endl;
+      std::cout << "xi se hizo NaN en la iteración: " << i << std::endl;
       result = std::numeric_limits<T>::quiet_NaN();
       return;
     }
@@ -237,6 +237,9 @@ void muller(const bmt::polynomial<T> &poly,
     if (isnan(abs(midResult)))
     {
       ++countRoots;
+      std::cout << "Elresultado de una de las raíces se hizo NaN\n"
+                << "no se puede continuar con el cálculo " << std::endl;
+
       roots.push_back(std::numeric_limits<U>::quiet_NaN());
       return;
     }
