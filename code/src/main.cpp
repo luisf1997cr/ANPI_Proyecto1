@@ -166,7 +166,7 @@ void findRoots(const Config &config,
     throw anpi::Exception("No roots found.");
   }
 
-  showRoots(roots);
+  //showRoots(roots);
 }
 
 template <class CT>

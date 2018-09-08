@@ -18,15 +18,18 @@ BOOST_AUTO_TEST_SUITE(MullerTest)
 
 BOOST_AUTO_TEST_CASE(MullerTestSimple)
 {
-    bmt::polynomial<float> p1 = {{6.f, -5.f, -2.f, 1.f}};
-    float start = 0;
-    std::vector<float> floatresults;
-    std::vector<float> expectedResults = {1, -2, 3};
+    bmt::polynomial<float> p1 = {{1.f, 0.f, -3.f, 1.f, 45.f}};
+    std::complex<float> start = 0;
+    std::vector<std::complex<float>> fcomplexresults;
+    std::vector<std::complex<float>> expectedResults = {(-0.30762, -0.23918), (-0.30762, 0.23918), (0.29651, -0.24173), (0.29651, 0.24173)};
 
-    anpi::muller(p1, floatresults, anpi::PolishEnum::DoNotPolish, start);
+    anpi::muller(p1, fcomplexresults, anpi::PolishEnum::DoNotPolish, start);
 
-    BOOST_CHECK(floatresults == expectedResults);
+    BOOST_CHECK(fcomplexresults == expectedResults);
 }
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(MullerTestPolished)
 
 BOOST_AUTO_TEST_CASE(MullerTestPolished)
 {
@@ -40,6 +43,9 @@ BOOST_AUTO_TEST_CASE(MullerTestPolished)
 
     BOOST_CHECK(floatresults == expectedResults);
 }
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(JenkTrTest)
 
 BOOST_AUTO_TEST_CASE(JenkTrTest)
 {
@@ -47,7 +53,9 @@ BOOST_AUTO_TEST_CASE(JenkTrTest)
     bmt::polynomial<float> p1 = {{6.f, -5.f, -2.f, 1.f}};
     std::vector<float> floatresults;
     std::vector<float> expectedResults = {1, -2, 3};
+
     anpi::jenkinsTraub(p1, floatresults);
+
     BOOST_CHECK(floatresults == expectedResults);
 }
 

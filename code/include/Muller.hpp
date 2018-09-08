@@ -87,7 +87,7 @@ void muller(const bmt::polynomial<T> &poly,
   complex x1 = complex(start), x2 = x1 + comp1, x3 = x1 + comp2;
 
   //variables to hold calculations
-  complex q, A, B, C, plusDenom, minusDenom, plusxi, minusxi, xi;
+  complex q, A, B, C, plusDenom, minusDenom, plusxi, minusxi, xi, ea;
   //variables to hold the evaluated polynomials
   complex f1, f2, f3;
 
@@ -113,9 +113,9 @@ void muller(const bmt::polynomial<T> &poly,
 
     //evaluate polynomials at the three given approximations
     f1 = bmt::evaluate_polynomial(&poly.data()[0], x1, psize);
-
+    ea = x1 - x2;
     //after evaluating the functions we check if we have arrived at a 0a
-    if (std::abs(f1) <= eps || std::abs(x1 - x2) < eps)
+    if (std::abs(f1) <= eps || std::abs(ea) < eps)
     {
       //check if imaginary part is too small
       if (0 < x1.imag() && x1.imag() < 2 * eps)
@@ -131,7 +131,8 @@ void muller(const bmt::polynomial<T> &poly,
       // return x1;
 
       result = x1;
-      std::cout << "Found on " << i << " iterations" << std::endl;
+      std::cout << "Found " << result << " \n using" << i << " iterations \n "
+                << "with error of : " << ea << std::endl;
       return;
     }
 
