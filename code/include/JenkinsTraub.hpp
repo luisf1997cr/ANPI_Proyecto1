@@ -837,9 +837,12 @@ typename bmt::polynomial<std::complex<typename anpi::detail::inner_type<U>::type
   int psize = poly.size();
   bmt::polynomial<complex> result(psize, 1);
   --psize;
+  int j = 0;
   for (int i = psize; i >= 0; --i)
   {
-    result[i] = complex(poly[i]);
+    //Revierte el valor del polinomio.
+    result[i] = complex(poly[j]);
+    j++;
   }
 
   return result;
